@@ -18,5 +18,6 @@ Add this to your package's `pubspec.yaml` file:
 ```yaml
 dependencies:
   kh_calendar: ^0.0.1
+  kh_calendar: ^0.0.2
   
 # Contact to this gmail for more information: kunvathrim@gmail.com
