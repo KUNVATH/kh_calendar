@@ -17,6 +17,6 @@ Add this to your package's `pubspec.yaml` file:
 
 ```yaml
 dependencies:
-  khmer_calendar: ^0.0.1
+  kh_calendar: ^0.0.1
   
 ## Contact to this gmail for more information: kunvathrim@gmail.com
