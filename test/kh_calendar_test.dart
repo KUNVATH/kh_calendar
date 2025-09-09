@@ -4,7 +4,8 @@ import 'package:kh_calendar/kh_calendar.dart';
 
 void main() {
   group('KhmerCalendar Tests', () {
-    testWidgets('KhmerCalendar renders without error', (WidgetTester tester) async {
+    testWidgets('KhmerCalendar renders without error',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -16,7 +17,8 @@ void main() {
       expect(find.byType(KhmerCalendar), findsOneWidget);
     });
 
-    testWidgets('KhmerCalendar shows current month', (WidgetTester tester) async {
+    testWidgets('KhmerCalendar shows current month',
+        (WidgetTester tester) async {
       await tester.pumpWidget(
         const MaterialApp(
           home: Scaffold(
@@ -26,9 +28,21 @@ void main() {
       );
 
       // Should find Khmer month names
-      final monthNames = ['មករា', 'កុម្ភៈ', 'មីនា', 'មេសា', 'ឧសភា', 'មិថុនា', 
-                         'កក្កដា', 'សីហា', 'កញ្ញា', 'តុលា', 'វិច្ឆិកា', 'ធ្នូ'];
-      
+      final monthNames = [
+        'មករា',
+        'កុម្ភៈ',
+        'មីនា',
+        'មេសា',
+        'ឧសភា',
+        'មិថុនា',
+        'កក្កដា',
+        'សីហា',
+        'កញ្ញា',
+        'តុលា',
+        'វិច្ឆិកា',
+        'ធ្នូ'
+      ];
+
       bool foundMonth = false;
       for (String month in monthNames) {
         if (tester.any(find.textContaining(month))) {
@@ -36,7 +50,7 @@ void main() {
           break;
         }
       }
-      
+
       expect(foundMonth, isTrue);
     });
   });

@@ -4,30 +4,38 @@ import 'package:flutter/material.dart';
 class KhmerCalendar extends StatefulWidget {
   /// Creates a Khmer calendar widget
   const KhmerCalendar({
-    Key? key,
+    super.key,
     this.onDateSelected,
     this.initialDate,
+    this.firstDate,
+    this.lastDate,
     this.primaryColor = Colors.blue,
     this.selectedTextColor = Colors.white,
     this.todayTextColor,
     this.normalTextColor = Colors.black87,
-  }) : super(key: key);
+  });
 
   /// Callback function called when a date is selected
   final Function(DateTime)? onDateSelected;
-  
+
   /// Initial date to display and select
   final DateTime? initialDate;
-  
+
+  /// The earliest date the user is permitted to select
+  final DateTime? firstDate;
+
+  /// The latest date the user is permitted to select
+  final DateTime? lastDate;
+
   /// Primary color for selected date background and header
   final Color primaryColor;
-  
+
   /// Text color for selected date
   final Color selectedTextColor;
-  
+
   /// Text color for today's date
   final Color? todayTextColor;
-  
+
   /// Text color for normal dates
   final Color normalTextColor;
 
@@ -68,7 +76,16 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
 
   // Khmer numerals
   final List<String> khmerNumbers = [
-    '០', '១', '២', '៣', '៤', '៥', '៦', '៧', '៨', '៩'
+    '០',
+    '១',
+    '២',
+    '៣',
+    '៤',
+    '៥',
+    '៦',
+    '៧',
+    '៨',
+    '៩'
   ];
 
   @override
@@ -86,6 +103,30 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
         .join();
   }
 
+  bool _isDateInRange(DateTime date) {
+    if (widget.firstDate != null && date.isBefore(widget.firstDate!)) {
+      return false;
+    }
+    if (widget.lastDate != null && date.isAfter(widget.lastDate!)) {
+      return false;
+    }
+    return true;
+  }
+
+  bool _canNavigateToPreviousMonth() {
+    if (widget.firstDate == null) return true;
+    final previousMonth = DateTime(currentDate.year, currentDate.month - 1);
+    final firstDayOfPreviousMonth = DateTime(previousMonth.year, previousMonth.month, 1);
+    return !firstDayOfPreviousMonth.isBefore(widget.firstDate!);
+  }
+
+  bool _canNavigateToNextMonth() {
+    if (widget.lastDate == null) return true;
+    final nextMonth = DateTime(currentDate.year, currentDate.month + 1);
+    final lastDayOfNextMonth = DateTime(nextMonth.year, nextMonth.month + 1, 0);
+    return !lastDayOfNextMonth.isAfter(widget.lastDate!);
+  }
+
   Color get _primaryColor => widget.primaryColor;
   Color get _selectedTextColor => widget.selectedTextColor;
   Color get _todayTextColor => widget.todayTextColor ?? widget.primaryColor;
@@ -93,7 +134,7 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
 
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 20),
+      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 20),
       decoration: BoxDecoration(
         color: _primaryColor,
         borderRadius: const BorderRadius.only(
@@ -105,8 +146,12 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           IconButton(
-            onPressed: _previousMonth,
-            icon: const Icon(Icons.chevron_left, color: Colors.white, size: 28),
+            onPressed: _canNavigateToPreviousMonth() ? _previousMonth : null,
+            icon: Icon(
+              Icons.chevron_left,
+              color: _canNavigateToPreviousMonth() ? Colors.white : Colors.white.withValues(alpha: 0.5),
+              size: 28,
+            ),
           ),
           Text(
             '${khmerMonths[currentDate.month - 1]} ${convertToKhmerNumber(currentDate.year)}',
@@ -117,8 +162,12 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
             ),
           ),
           IconButton(
-            onPressed: _nextMonth,
-            icon: const Icon(Icons.chevron_right, color: Colors.white, size: 28),
+            onPressed: _canNavigateToNextMonth() ? _nextMonth : null,
+            icon: Icon(
+              Icons.chevron_right,
+              color: _canNavigateToNextMonth() ? Colors.white : Colors.white.withValues(alpha: 0.5),
+              size: 28,
+            ),
           ),
         ],
       ),
@@ -171,26 +220,29 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
       final isToday = date.day == DateTime.now().day &&
           date.month == DateTime.now().month &&
           date.year == DateTime.now().year;
+      final isInRange = _isDateInRange(date);
 
       days.add(
         GestureDetector(
-          onTap: () {
-            setState(() {
-              selectedDate = date;
-            });
-            // Call the callback if provided
-            widget.onDateSelected?.call(date);
-          },
+          onTap: isInRange
+              ? () {
+                  setState(() {
+                    selectedDate = date;
+                  });
+                  // Call the callback if provided
+                  widget.onDateSelected?.call(date);
+                }
+              : null,
           child: Container(
             margin: const EdgeInsets.all(2),
             decoration: BoxDecoration(
               color: isSelected
                   ? _primaryColor
-                  : isToday
-                      ? _primaryColor.withOpacity(0.1)
+                  : isToday && isInRange
+                      ? _primaryColor.withValues(alpha: 0.1)
                       : Colors.transparent,
               borderRadius: BorderRadius.circular(8),
-              border: isToday && !isSelected
+              border: isToday && !isSelected && isInRange
                   ? Border.all(color: _primaryColor, width: 2)
                   : null,
             ),
@@ -202,9 +254,11 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
                   fontWeight: FontWeight.w500,
                   color: isSelected
                       ? _selectedTextColor
-                      : isToday
+                      : isToday && isInRange
                           ? _todayTextColor
-                          : _normalTextColor,
+                          : isInRange
+                              ? _normalTextColor
+                              : Colors.grey[400],
                 ),
               ),
             ),
@@ -239,13 +293,14 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      height: MediaQuery.of(context).size.height/2,
+      margin: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
           BoxShadow(
-            color: Colors.grey.withOpacity(0.3),
+            color: Colors.grey.withValues(alpha: 0.3),
             spreadRadius: 2,
             blurRadius: 5,
             offset: const Offset(0, 3),
@@ -258,18 +313,18 @@ class _KhmerCalendarState extends State<KhmerCalendar> {
           _buildHeader(),
           _buildDaysOfWeekHeader(),
           _buildCalendarGrid(),
-          Container(
-            padding: const EdgeInsets.all(16),
-            child: Text(
-              'កាលបរិច្ឆេទដែលបានជ្រើសរើស៖ ${convertToKhmerNumber(selectedDate.day)} ${khmerMonths[selectedDate.month - 1]} ${convertToKhmerNumber(selectedDate.year)}',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[700],
-                fontWeight: FontWeight.w500,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
+          // Container(
+          //   padding: const EdgeInsets.all(16),
+          //   child: Text(
+          //     'កាលបរិច្ឆេទដែលបានជ្រើសរើស៖ ${convertToKhmerNumber(selectedDate.day)} ${khmerMonths[selectedDate.month - 1]} ${convertToKhmerNumber(selectedDate.year)}',
+          //     style: TextStyle(
+          //       fontSize: 16,
+          //       color: Colors.grey[700],
+          //       fontWeight: FontWeight.w500,
+          //     ),
+          //     textAlign: TextAlign.center,
+          //   ),
+          // ),
         ],
       ),
     );

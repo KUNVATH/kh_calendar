@@ -1,5 +1,14 @@
-## 0.0.1
-# Changelog
+## 0.0.2
+
+Changelog
+All notable changes to this project will be documented in this file.
+
+## [0.0.2] - 2025-09-10
+
+### Added
+
+- Better Khmer Calendar widget
+- Add Khmer Calendar Dialog
 
 ## [0.0.1] - 2025-09-09
 

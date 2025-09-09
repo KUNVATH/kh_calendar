@@ -1,6 +1,6 @@
 name: kh_calendar
 description: "A beautiful custom calendar widget with full Khmer language support including Khmer numerals, month names, and day names. Built with pure Flutter without external dependencies."
-version: 0.0.1
+version: 0.0.2
 homepage: https://github.com/KUNVATH/kh_calendar.git
 repository: https://github.com/KUNVATH/kh_calendar.git
 
